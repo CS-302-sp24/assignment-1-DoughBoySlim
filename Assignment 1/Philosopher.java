@@ -1,28 +1,47 @@
-import java.util.Random;
-
 class Philosopher extends Thread {
-  private Chopstick left, right;
-  private Random random;
-  private int thinkCount;
+    private int id;
+    private Chopstick leftChopstick;
+    private Chopstick rightChopstick;
+    private int numCycles;
+    private int maxTt;
+    private int maxEt;
 
-  public Philosopher(Chopstick left, Chopstick right) {
-    this.left = left; this.right = right;
-    random = new Random();
-  }
+    public Philosopher(int id, Chopstick leftChopstick, Chopstick rightChopstick, int numCycles, int maxTt, int maxEt) {
+        this.id = id;
+        this.leftChopstick = leftChopstick;
+        this.rightChopstick = rightChopstick;
+        this.numCycles = numCycles;
+        this.maxTt = maxTt;
+        this.maxEt = maxEt;
+    }
 
-  public void run() {
-    try {
-      while(true) {
-        ++thinkCount;
-        if (thinkCount % 10 == 0)
-          System.out.println("Philosopher " + this + " has thought " + thinkCount + " times");
-        Thread.sleep(random.nextInt(1000));     // Think for a while
-        synchronized(left) {                    // Grab left chopstick 
-          synchronized(right) {                 // Grab right chopstick 
-            Thread.sleep(random.nextInt(1000)); // Eat for a while
-          }
+    @Override
+    public void run() {
+        try {
+            for (int cycle = 0; numCycles == 0 || cycle < numCycles; cycle++) {
+                // Thinking
+                int thinkingTime = (int) (Math.random() * maxTt);
+                System.out.println("Philosopher " + id + " thinks for " + thinkingTime + " units");
+                Thread.sleep(thinkingTime);
+
+                // Eating
+                System.out.println("Philosopher " + id + " wants right chopstick");
+                rightChopstick.Grab(id);
+                System.out.println("Philosopher " + id + " has right chopstick");
+                System.out.println("Philosopher " + id + " wants left chopstick");
+                leftChopstick.Grab(id);
+                System.out.println("Philosopher " + id + " has left chopstick");
+
+                int eatingTime = (int) (Math.random() * maxEt);
+                System.out.println("Philosopher " + id + " eats for " + eatingTime + " units");
+                Thread.sleep(eatingTime);
+
+                // Releasing chopsticks
+                leftChopstick.Drop(id);
+                rightChopstick.Drop(id);
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
-      }
-    } catch(InterruptedException e) {}
-  }
+    }
 }
